@@ -12,6 +12,9 @@ transport:
 provisioner:
   name: chef_zero
 
+verifier:
+  name: pester
+
 platforms:
   - name: windows-8.1-chef11.10.4
     driver_config:
@@ -42,3 +45,28 @@ suites:
     run_list:
       - recipe[powershell::powershell5]
     attributes:
+  - name: install_package
+    run_list:
+      - recipe[minimal::installpackage]
+    attributes: 
+        powershell: 
+            installation_reboot_mode: "immediate_reboot"
+  - name: install_provider_manual
+    run_list:
+      - recipe[minimal::installprovidermanual]
+    attributes: 
+        powershell: 
+            installation_reboot_mode: "immediate_reboot"
+  - name: uninstall_package
+    run_list:
+      - recipe[minimal::uninstallpackage]
+    attributes: 
+        powershell: 
+            installation_reboot_mode: "immediate_reboot"
+  - name: uninstall_provider_manual
+    run_list:
+      - recipe[minimal::uninstallprovidermanual]
+    attributes: 
+        powershell: 
+            installation_reboot_mode: "immediate_reboot"
+            
