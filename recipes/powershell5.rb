@@ -3,7 +3,7 @@
 # Cookbook Name:: powershell
 # Recipe:: powershell5
 #
-# Copyright:: Copyright (c) 2014 Chef Software, Inc.
+# Copyright:: Copyright (c) 2016 Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,32 +20,21 @@
 
 # PowerShell 5.0 RTM Download Page
 # https://www.microsoft.com/en-us/download/details.aspx?id=50395
-case node['platform']
-when 'windows'
 
-  if ::Windows::VersionHelper.nt_version(node) >= 6.1
-    include_recipe 'powershell::powershell2'
+reboot 'Install WMF' do
+  action :nothing
+  delay_mins 1
+  reason 'Installing Windows Management Framework 5'
+end
 
-    include_recipe 'powershell::windows_reboot' unless node['powershell']['installation_reboot_mode'] == 'no_reboot'
-
-    windows_package 'Windows Management Framework Core 5.0' do # ~FC009
-      source node['powershell']['powershell5']['url']
-      checksum node['powershell']['powershell5']['checksum']
-      installer_type :custom
-      options '/quiet /norestart'
-      timeout node['powershell']['powershell5']['timeout']
-      action :install
-      success_codes [0, 42, 127, 3010]
-      # Note that the :immediately is to immediately notify the other resource,
-      # not to immediately reboot. The windows_reboot 'notifies' does that.
-      notifies :request, 'windows_reboot[powershell]', :immediately if reboot_pending? && node['powershell']['installation_reboot_mode'] != 'no_reboot'
-      not_if { ::Powershell::VersionHelper.powershell_version?(node['powershell']['powershell5']['version']) }
-    end
-
-  else
-    Chef::Log.warn("PowerShell 5.0 is not supported or already installed on this version of Windows: #{node['platform_version']}")
+if Powershell::PowershellVersionHelper.new.server_2008r2?(node)
+  # 2008 R2 is a special case, and needs WMF 4 installed first.
+  powershell '4.0' do
+    notifies :reboot_now, 'reboot[Install WMF]', :immediately
   end
+end
 
-else
-  Chef::Log.warn('PowerShell 5.0 can only be installed on the Windows platform.')
+powershell '5.0.10586' do
+  action :install
+  notifies :request_reboot, 'reboot[Install WMF]', :immediately
 end
