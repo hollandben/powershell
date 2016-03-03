@@ -12,6 +12,9 @@ transport:
 provisioner:
   name: chef_zero
 
+verifier:
+  name: pester
+
 platforms:
   - name: windows-8.1-chef11.10.4
     driver_config:
@@ -38,7 +41,15 @@ suites:
   - name: default
     run_list:
       - recipe[minimal::default]
+  - name: powershell2
+    run_list:
+      - recipe[powershell::powershell2]
+  - name: powershell3
+    run_list:
+      - recipe[powershell::powershell3]
+  - name: powershell4
+    run_list:
+      - recipe[powershell::powershell4]
   - name: powershell5
     run_list:
       - recipe[powershell::powershell5]
-    attributes:

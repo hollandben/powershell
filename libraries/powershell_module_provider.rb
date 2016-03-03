@@ -126,6 +126,7 @@ class PowershellModuleProvider < Chef::Provider
     Chef::Log.debug("Powershell Module download url is #{download_url}")
 
     ps_module_path = sanitize! @new_resource.destination
+    FileUtils.mkdir_p @new_resource.destination unless Dir.exist?(ps_module_path)
     Chef::Log.debug("Powershell Module ps_module_path is #{ps_module_path}")
 
     installed_module = module_exists?(ps_module_path, "*#{@new_resource.package_name}*")

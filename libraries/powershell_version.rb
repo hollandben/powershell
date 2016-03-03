@@ -52,7 +52,7 @@ module Powershell
                    []
                  elsif server_2012r2?(node)
                    [4, 2]
-                 elsif server_2012?
+                 elsif server_2012?(node)
                    [3, 2]
                  else
                    []
