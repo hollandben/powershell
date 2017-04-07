@@ -28,6 +28,13 @@ if platform_family?('windows')
 
     include_recipe 'powershell::windows_reboot' unless node['powershell']['installation_reboot_mode'] == 'no_reboot'
 
+    ms_dotnet_framework '4.6.2' do
+      action            :install
+      include_patches   true
+      require_support   true
+      notifies :reboot_now, 'reboot[powershell]', :immediately if node['powershell']['installation_reboot_mode'] != 'no_reboot'
+    end
+
     windows_package 'Windows Management Framework Core 5.0' do # ~FC009
       source node['powershell']['powershell5']['url']
       checksum node['powershell']['powershell5']['checksum']

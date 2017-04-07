@@ -24,6 +24,7 @@ require 'uri'
 
 class PowershellModuleProvider < Chef::Provider::LWRPBase
   include Chef::Mixin::ShellOut
+  include Windows::Helper
 
   use_inline_resources
 
@@ -65,7 +66,7 @@ class PowershellModuleProvider < Chef::Provider::LWRPBase
     if Dir.exist? @new_resource.source
       ps_module_path = FileUtils.mkdir_p(module_path_name).first
       Chef::Log.info("Powershell Module path folder created: #{ps_module_path}")
-      @new_resource.destination(sanitize!(@new_resource.destination))
+      @new_resource.destination(win_friendly_path(@new_resource.destination))
       module_dir = Dir["#{@new_resource.source}/*.psd1", "#{@new_resource.source}/*.psm1", "#{@new_resource.source}/*.dll"]
       module_dir.each do |filename|
         FileUtils.cp(filename, ps_module_path)
@@ -136,7 +137,7 @@ class PowershellModuleProvider < Chef::Provider::LWRPBase
     download_url = @new_resource.source if download_url.nil?
     Chef::Log.debug("Powershell Module download url is #{download_url}")
 
-    ps_module_path = sanitize! @new_resource.destination
+    ps_module_path = win_friendly_path(@new_resource.destination)
     Chef::Log.debug("Powershell Module ps_module_path is #{ps_module_path}")
 
     installed_module = module_exists?(ps_module_path, "*#{@new_resource.package_name}*")
@@ -161,9 +162,5 @@ class PowershellModuleProvider < Chef::Provider::LWRPBase
 
   def module_exists?(path, pattern)
     Dir.entries(path).find { |d| ::File.fnmatch?(pattern, d, ::File::FNM_CASEFOLD) }
-  end
-
-  def sanitize!(path)
-    path.gsub(::File::SEPARATOR, ::File::ALT_SEPARATOR || '\\') if path
   end
 end

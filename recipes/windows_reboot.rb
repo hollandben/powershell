@@ -3,5 +3,6 @@ node.default['windows']['allow_pending_reboots'] = true
 node.default['windows']['allow_reboot_on_failure'] = true
 
 reboot 'powershell' do
+  delay_mins 1
   action :nothing
 end

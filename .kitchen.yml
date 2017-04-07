@@ -11,6 +11,16 @@ transport:
 provisioner:
   name: chef_zero
   deprecations_as_errors: true
+  retry_on_exit_code:
+    - 35 # 35 is the exit code signaling that the node is rebooting
+  wait_for_retry: 90 # given the reboot option delays a minute before trying to reboot, we should wait to reconnect
+  max_retries: 3
+  client_rb:
+    exit_status: :enabled # Opt-in to the standardized exit codes
+    client_fork: false  # Forked instances don't return the real exit code
+  attributes:
+    powershell:
+      installation_reboot_mode: immediate_reboot
 
 platforms:
   - name: windows-7
@@ -40,6 +50,10 @@ suites:
       - windows-2008r2
       - windows-7
   - name: powershell4
+    attributes:
+      ms_dotnet:
+        v4:
+          version: '4.5.1'
     run_list:
       - recipe[powershell::powershell4]
     includes:

@@ -29,12 +29,16 @@ if platform_family?('windows')
   # * Windows NT 6.2 Server (Windows Server 2012 not Windows 8)
   if nt_version == 6.1 || (nt_version == 6.2 && ::Windows::VersionHelper.server_version?(node))
 
-    # Ensure .NET 4.5 is installed or installation will fail silently per Microsoft.
-    raise 'Attribute ms_dotnet.v4.version is not configured to install .NET4.5 as required for Powershell4' if node['ms_dotnet']['v4']['version'] < '4.5'
-    include_recipe 'ms_dotnet::ms_dotnet4'
-
     # Reboot if user specifies doesn't specify no_reboot
     include_recipe 'powershell::windows_reboot' unless node['powershell']['installation_reboot_mode'] == 'no_reboot'
+
+    # Ensure .NET 4.5 is installed or installation will fail silently per Microsoft.
+    ms_dotnet_framework '4.5' do
+      action            :install
+      include_patches   true
+      require_support   true
+      notifies :reboot_now, 'reboot[powershell]', :immediately if node['powershell']['installation_reboot_mode'] != 'no_reboot'
+    end
 
     windows_package 'Windows Management Framework Core 4.0' do # ~FC009
       source node['powershell']['powershell4']['url']
